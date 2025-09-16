@@ -1,0 +1,32 @@
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: app
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: app
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  app:
+    build: .
+    environment:
+      CONFIG_PATH: /app/config.json
+      CONFIG_ENV: docker
+    ports:
+      - "8080:8080"
+      - "9090:9090"
+    depends_on:
+      - postgres
+    volumes:
+      - ./.data:/data
+      - ./customer_map.json:/customer_map.json:ro
+      - ./config.json:/app/config.json:ro
+      - ./api/swagger.json:/app/api/swagger.json:ro
+
+volumes:
+  pgdata:
+
+

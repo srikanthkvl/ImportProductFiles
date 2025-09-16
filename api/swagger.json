@@ -1,0 +1,48 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Import Service API",
+    "version": "1.0.0",
+    "description": "API to enqueue import jobs into the background worker."
+  },
+  "paths": {
+    "/enqueue": {
+      "post": {
+        "summary": "Enqueue import job",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "customer_id": {"type": "string"},
+                  "product_type": {"type": "string", "enum": ["users", "organizations", "courses"]},
+                  "blob_uri": {"type": "string"}
+                },
+                "required": ["customer_id", "product_type", "blob_uri"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {"job_id": {"type": "integer", "format": "int64"}}
+                }
+              }
+            }
+          },
+          "400": {"description": "Bad Request"},
+          "500": {"description": "Internal Server Error"}
+        }
+      }
+    }
+  }
+}
+
+
