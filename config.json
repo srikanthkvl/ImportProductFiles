@@ -1,13 +1,13 @@
 {
   "default": {
-    "app_db_dsn": "postgres://postgres:postgres@localhost:5432/data_management_poc?sslmode=disable",
+    "app_db_dsn": "postgres://app:app@localhost:5432/app?sslmode=disable",
     "rest_addr": ":8080",
     "grpc_addr": ":9090",
     "customer_map_path": "customer_map.json",
     "worker_concurrency": 4
   },
   "docker": {
-    "app_db_dsn": "postgres://postgres:appostgresp@localhost:5432/data_management_poc?sslmode=disable",
+    "app_db_dsn": "ppostgres://app:app@localhost:5432/app?sslmode=disable",
     "rest_addr": ":8080",
     "grpc_addr": ":9090",
     "customer_map_path": "/customer_map.json",

@@ -40,6 +40,41 @@ customer_map.json  # sample customerId->DSN mapping
 docker compose up --build
 ```
 
+## Setup & install (local)
+1) Prerequisite: Go 1.23+, Docker (Optional), Postgres Instance
+2) Clone and install deps:
+``` bash
+git clone <this-repo>
+cd importer
+go mod tidy
+```
+3) Configure:
+```bash
+cp config.json config.local.json 
+export CONFIG_PATH=./config.local.json
+export CONFIG_ENV=default
+```
+
+4) Prepare central DB (app): ensure database exists (see `APP_DB_DSN`). Tables are auto-migrated on startup
+
+### Run (local)
+- REST server (spawns workers):
+```bash
+go run ./cmd/rest
+```
+
+- gRPC server:
+```bash
+go run ./cmd/grpc
+```
+
+- cli enqueue + run workers:
+```bash
+go run ./cmd/cli --customer customer1 --products users --file ./sample/users.csv
+```
+### swagger ui
+- Open `http://localhost:8080/swagger` (served via cdn). Spec at `/swagger/doc.json`
+
 REST will listen on `localhost:8080`. gRPC on `localhost:9090`.
 Compose passes `CONFIG_PATH=/app/config.json` and `CONFIG_ENV=docker`.
 
