@@ -63,6 +63,8 @@ func (s *Service) ProcessJob(ctx context.Context, job *jobs.Job) error {
 		return err
 	}
 
+	fmt.Println("Inserting %d records into customer:%s, table:%s", len(records), job.CustomerID, table)
+
 	for _, rec := range records {
 		b, err := json.Marshal(rec)
 		if err != nil {

@@ -1,6 +1,6 @@
 {
-  "customer1": "postgres://app:app@postgres:5432/customer1?sslmode=disable",
-  "customer2": "postgres://app:app@postgres:5432/customer2?sslmode=disable"
+  "customer1": "postgres://app:app@localhost:5432/customer1?sslmode=disable",
+  "customer2": "postgres://app:app@localhost:5432/customer2?sslmode=disable"
 }
 
 

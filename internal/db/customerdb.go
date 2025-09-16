@@ -51,6 +51,7 @@ func (c *CustomerDB) EnsureTargetTable(ctx context.Context, tableName string) er
 
 // InsertJSONB inserts a row into the target table with the JSONB document.
 func (c *CustomerDB) InsertJSONB(ctx context.Context, tableName string, data []byte) error {
+	fmt.Println("Inserting into table:%s, values: %s", tableName, string(data))
 	ddl := fmt.Sprintf("INSERT INTO %s (data) VALUES ($1)", tableName)
 	_, err := c.Pool.Exec(ctx, ddl, data)
 	return err

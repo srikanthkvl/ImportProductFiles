@@ -33,7 +33,12 @@ func NewRepository(adb *db.AppDB) *Repository { return &Repository{DB: adb} }
 func (r *Repository) Enqueue(ctx context.Context, customerID, productType, blobURI string) (int64, error) {
 	row := r.DB.Pool.QueryRow(ctx, `INSERT INTO import_jobs(customer_id, product_type, blob_uri, status) VALUES($1,$2,$3,'queued') RETURNING id`, customerID, productType, blobURI)
 	var id int64
-	return id, row.Scan(&id)
+	if err := row.Scan(&id); err != nil {
+		return 0, err
+	}
+	r.Log(ctx, id, "info", "job enqueued", []byte(`{"customer_id":"`+customerID+`","product_type":"`+productType+`","blob_uri":"`+blobURI+`"}`))
+	
+	return id, nil
 }
 
 func (r *Repository) FetchAndStart(ctx context.Context) (*Job, error) {
@@ -59,16 +64,19 @@ WHERE id = (
 	if err := tx.Commit(ctx); err != nil {
 		return nil, err
 	}
+	r.Log(ctx, j.ID, "info", "job started running", nil)
 	return &j, nil
 }
 
 func (r *Repository) Complete(ctx context.Context, jobID int64) error {
 	_, err := r.DB.Pool.Exec(ctx, `UPDATE import_jobs SET status='succeeded', finished_at=now() WHERE id=$1`, jobID)
+	r.Log(ctx, jobID, "info", "job completed successfully", nil)
 	return err
 }
 
 func (r *Repository) Fail(ctx context.Context, jobID int64, errText string) error {
 	_, err := r.DB.Pool.Exec(ctx, `UPDATE import_jobs SET status='failed', finished_at=now(), error_text=$2 WHERE id=$1`, jobID, errText)
+	r.Log(ctx, jobID, "error", "job failed", []byte(`{"error":"`+errText+`"}`))
 	return err
 }
 
