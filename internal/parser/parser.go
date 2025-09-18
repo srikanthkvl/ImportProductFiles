@@ -9,12 +9,32 @@ import (
 	"mime"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
 // Record is a generic parsed map that will be validated per product schema.
 type Record map[string]string
 
 // Detect and parse file types: CSV, TSV, simple text (key=value per line), and basic Excel (xlsx) placeholder.
+
+func ParseBatches(filename string, r io.Reader, batchSize int, handler func([]Record) error) error {
+	if batchSize <= 0 {
+		batchSize = 1000 // default batch size
+	}
+
+	ct := contentTypeFromExt(filename)
+	switch ct {
+	case "text/csv":
+		return parseCSVBatch(r, ',', batchSize, handler)
+	case "text/tab-separated-values":
+		return parseCSVBatch(r, '\t', batchSize, handler)
+	case "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
+		return errors.New("xlsx parsing requires full file; provide .csv/.tsv for now")
+	default:
+		// For key-value pairs, we can batch process lines
+		return errors.New("kv parsing does not support batch processing; use Parse function instead")
+	}
+}
 
 // Parse reads the content and returns a slice of records keyed by header names.
 func Parse(filename string, r io.Reader) ([]Record, error) {
@@ -47,6 +67,47 @@ func contentTypeFromExt(name string) string {
 		return t
 	}
 	return "text/plain"
+}
+
+func parseCSVBatch(r io.Reader, sep rune, batchSize int, handler func([]Record) error) error {
+	cr := csv.NewReader(r)
+	cr.Comma = sep
+	cr.TrimLeadingSpace = true
+	headers, err := cr.Read()
+	if err != nil {
+		return err
+	}
+
+	batch := make([]Record, 0, batchSize)
+	startTime := time.Now()
+	for {
+		row, err := cr.Read()
+		if err == io.EOF {
+			if err := handler(batch); err != nil {
+				return err
+			}
+			fmt.Printf("Finished processing %d records in %v\n", len(batch), time.Since(startTime))
+			break
+		}
+
+		if err != nil {
+			return err
+		}
+
+		rec := Record{}
+		for j := 0; j < len(headers) && j < len(row); j++ {
+			rec[strings.TrimSpace(headers[j])] = strings.TrimSpace(row[j])
+		}
+		batch = append(batch, rec)
+
+		if len(batch) >= batchSize {
+			if err := handler(batch); err != nil {
+				return err
+			}
+			batch = make([]Record, 0, batchSize)
+		}
+	}
+	return nil
 }
 
 func parseCSV(r io.Reader, sep rune) ([]Record, error) {
@@ -95,5 +156,3 @@ func parseKV(r io.Reader) ([]Record, error) {
 func parseXLSX(r io.Reader) ([]Record, error) {
 	return nil, errors.New("xlsx parsing requires full file; provide .csv/.tsv for now")
 }
-
-

@@ -19,6 +19,8 @@ type AppConfig struct {
 	CustomerMapPath string
 	// Default number of worker goroutines processing jobs
 	WorkerConcurrency int
+	// Number of records to parse in a batch, default 0 means no batching
+	ParseBatchSize int
 }
 
 // CustomerDBMap is a mapping from customerId to DSN string.
@@ -31,6 +33,7 @@ func LoadConfig() (AppConfig, error) {
 		RESTAddr:        valueOrDefault(os.Getenv("REST_ADDR"), ":8080"),
 		GRPCAddr:        valueOrDefault(os.Getenv("GRPC_ADDR"), ":9090"),
 		CustomerMapPath: valueOrDefault(os.Getenv("CUSTOMER_MAP_PATH"), "customer_map.json"),
+		ParseBatchSize:  0,
 	}
 
 	if wc := os.Getenv("WORKER_CONCURRENCY"); wc != "" {
@@ -43,6 +46,15 @@ func LoadConfig() (AppConfig, error) {
 	}
 	if c.WorkerConcurrency == 0 {
 		c.WorkerConcurrency = 4
+	}
+
+	if pbs := os.Getenv("PARSE_BATCH_SIZE"); pbs != "" {
+		// parse int safely
+		var n int
+		_, err := fmt.Sscanf(pbs, "%d", &n)
+		if err == nil && n >= 0 {
+			c.ParseBatchSize = n
+		}
 	}
 
 	if c.AppPostgresDSN == "" {

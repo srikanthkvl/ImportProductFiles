@@ -20,6 +20,7 @@ func Records(productType string, records []parser.Record) error {
 			}
 		}
 	}
+
 	return nil
 }
 

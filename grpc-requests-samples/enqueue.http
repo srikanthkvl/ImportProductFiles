@@ -1,0 +1,7 @@
+POST importer.Importer/enqueue:9090
+
+{
+  "customer_id": "customer1",
+  "product_type": "users",
+  "blob_uri": "/Users/home/practice/Go/ImportProductFiles/sample/users.csv"
+}

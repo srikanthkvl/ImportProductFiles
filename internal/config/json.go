@@ -13,6 +13,7 @@ type jsonEnv struct {
 	GRPCAddr          string `json:"grpc_addr"`
 	CustomerMapPath   string `json:"customer_map_path"`
 	WorkerConcurrency int    `json:"worker_concurrency"`
+	ParseBatchSize    int    `json:"parse_batch_size"`
 }
 
 // LoadFromJSON loads configuration from a JSON file with environment sections.
@@ -58,6 +59,7 @@ func mergeJSONEnvs(envs map[string]jsonEnv, env string) (AppConfig, error) {
 		GRPCAddr:          pickString(sel.GRPCAddr, d.GRPCAddr, ":9090"),
 		CustomerMapPath:   pickString(sel.CustomerMapPath, d.CustomerMapPath, "customer_map.json"),
 		WorkerConcurrency: pickInt(sel.WorkerConcurrency, d.WorkerConcurrency, 4),
+		ParseBatchSize:  pickInt(sel.ParseBatchSize, d.ParseBatchSize, 0),
 	}
 	if out.AppPostgresDSN == "" {
 		return AppConfig{}, fmt.Errorf("app_db_dsn is required in JSON for env '%s'", env)
@@ -68,6 +70,7 @@ func mergeJSONEnvs(envs map[string]jsonEnv, env string) (AppConfig, error) {
 		GRPCAddr:          out.GRPCAddr,
 		CustomerMapPath:   out.CustomerMapPath,
 		WorkerConcurrency: out.WorkerConcurrency,
+		ParseBatchSize:    out.ParseBatchSize,
 	}, nil
 }
 

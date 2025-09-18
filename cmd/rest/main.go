@@ -53,6 +53,11 @@ func main() {
 	jr := jobs.NewRepository(adb)
 	imp := importer.NewService(blob.FileBlob{}, jr, custMap)
 
+	if cfg.ParseBatchSize > 0 {
+		ctx = context.WithValue(ctx, "parse_batch_size", cfg.ParseBatchSize)
+		log.Printf("Using parse batch size: %d", cfg.ParseBatchSize)
+	}
+
 	// start worker
 	go imp.Worker(ctx, cfg.WorkerConcurrency)
 
@@ -119,5 +124,3 @@ func main() {
 		log.Fatalf("http: %v", err)
 	}
 }
-
-

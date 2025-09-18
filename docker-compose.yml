@@ -21,7 +21,7 @@ services:
     depends_on:
       - postgres
     volumes:
-      - ./.data:/data
+      - ./.data:/DATA
       - ./customer_map.json:/customer_map.json:ro
       - ./config.json:/app/config.json:ro
       - ./api/swagger.json:/app/api/swagger.json:ro
